@@ -1,39 +1,98 @@
 @echo off
 
-echo ******************************************************************
-echo ***        Welcome to the Superbook quick-start script!        ***
-echo *** Please make sure you turned on usb debugging on your phone ***
-echo ***          and installed the drivers if necessarry.          ***
-echo ***                     for drivers go to:                     ***
-echo ***      https://developer.android.com/studio/run/oem-usb      ***
-echo ***                                                            ***
-echo ***    I take no responsibility for the following commands!    ***
-echo ***     You can open this script to check what it's doing.     ***
-echo ***                                                            ***
-echo *** If you want to enter the commands yourself, you can just   ***
-echo *** open a shell (Shift+Right click) in this folder and start  ***
-echo ***          with an adb commant (eg. "adb devices")           ***
-echo ***                                                            ***
-echo ***                 Please read the README.md                  ***
-echo ***                                                            ***
-echo ***       by Leonhard Künzler, 2018, leonhard@kuenzler.io      ***
-echo ******************************************************************
+echo *******************************************************************
+echo ***        Welcome to the Superbook quick-start script!         ***
+echo *** Please make sure you turned on usb debugging on your phone. ***
+echo ***                                                             ***
+echo ***    I take no responsibility for the following commands!     ***
+echo ***     You can open this script to check what it's doing.      ***
+echo ***                                                             ***
+echo ***                 Please read the README.txt                  ***
+echo ***                                                             ***
+echo ***       by Leonhard Künzler, 2018, leonhard@kuenzler.io       ***
+echo ***       and Danny Sortino, 2018, danny.sortino@hotmail.co.uk  ***
+echo *******************************************************************
 
+IF "%PROCESSOR_ARCHITECTURE%" EQU "amd64" (
+>nul 2>&1 "%SYSTEMROOT%\SysWOW64\cacls.exe" "%SYSTEMROOT%\SysWOW64\config\system"
+) ELSE (
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+)
+
+echo    Clockwork universial usb driver provides driver support for most devices.
+echo    If you already have the drives for your your mobile installed then you do not need to install this.
+echo    If these drivers do not work, grab the correct ones from https://developer.android.com/studio/run/oem-usb
+set /P c=Install clockwork universal usb driver app (Note: requires admin)? [Y/N]?
+if /I "%c%" EQU "Y" goto :checkIfAdmin
+goto :checkDownloadADB
+
+:checkIfAdmin
+if '%errorlevel%' NEQ '0' (
+	echo Requesting administrative privileges...
+	goto UACPrompt
+) else ( goto gotAdmin )
+
+:UACPrompt
+echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
+"%temp%\getadmin.vbs"
+goto checkDownloadADB
+	
+
+:gotAdmin
+if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
+pushd "%CD%"
+CD /D "%~dp0"
+goto clockworkmod
+
+:clockworkmod
+echo Installing clockworkmod
+powershell -command "start-bitstransfer -source http://download.clockworkmod.com/test/UniversalAdbDriverSetup.msi"
+setlocal
+cd /d %~dp0
+msiexec.exe /i %cd%\UniversalAdbDriverSetup.msi /QN /L*V "%temp%\msilog.log"
+del UniversalAdbDriverSetup.msi
+exit /B
+
+:checkDownloadADB
+echo.
+echo    ADB is needed for executing commands on the phone.
+echo    If you already have adb.exe inside this directory then you do not need to download this.
+set /P c=Download ADB (Note: needed for further commands)? [Y/N]?
+if /I "%c%" EQU "Y" (
+	SET /A extracted=1
+	goto :installADB
+)
+if /I "%c%" EQU "N" (
+	SET /A extracted=0
+	goto :deviceCheck
+)
+
+:installADB
+powershell -command "start-bitstransfer -source https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+setlocal
+cd /d %~dp0
+Call :UnZipFile "%cd%\" "%cd%\platform-tools-latest-windows.zip"
+del platform-tools-latest-windows.zip
+cd "%cd%\platform-tools"
+goto deviceCheck
+
+:deviceCheck
 echo.
 echo 1: Devicecheck
 echo    Checking for your device...
 echo    If you don't see your device between the dots, it's not recognized. 
 echo	In this case check the device manager and/or the link about the drivers above.
 echo	if it ends with "device", everything is good. 
-echo 	if it ends with "unauthorized" please check your phone screen and accept the promt
-:deviceCheck
+echo 	if it ends with "unauthorized" please check your phone screen and accept the prompt
+:checkDevices
 echo ........................................
 adb devices
 echo ........................................
 set /P c=Try again? [Y/N]?
-if /I "%c%" EQU "Y" goto :deviceCheck
+if /I "%c%" EQU "Y" goto :checkDevices
 if /I "%c%" EQU "N" goto :afterDeviceCheck
-goto :deviceCheck
+goto :checkDevices
 
 :afterDeviceCheck
 echo.
@@ -127,8 +186,32 @@ pause
 echo.
 echo 7: Done
 echo    You're all set. Have fun!
+adb kill-server
+timeout 1
+if /I "%extracted%" EQU "1" goto cleanupPlatformTools
+
+:cleanupPlatformTools
+cd ..
+@RD /S /Q "%cd%\platform-tools"
 
 :preEnd
 pause
 echo Exiting...
 :end
+
+
+:UnZipFile <ExtractTo> <newzipfile>
+set vbs="%temp%\_.vbs"
+if exist %vbs% del /f /q %vbs%
+>%vbs%  echo Set fso = CreateObject("Scripting.FileSystemObject")
+>>%vbs% echo If NOT fso.FolderExists(%1) Then
+>>%vbs% echo fso.CreateFolder(%1)
+>>%vbs% echo End If
+>>%vbs% echo set objShell = CreateObject("Shell.Application")
+>>%vbs% echo set FilesInZip=objShell.NameSpace(%2).items
+>>%vbs% echo objShell.NameSpace(%1).CopyHere(FilesInZip)
+>>%vbs% echo Set fso = Nothing
+>>%vbs% echo Set objShell = Nothing
+cscript //nologo %vbs%
+if exist %vbs% del /f /q %vbs%
+
