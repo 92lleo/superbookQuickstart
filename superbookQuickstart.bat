@@ -122,7 +122,7 @@ echo    It's mandatory to install it.
 set /P c=Install displaylink app? [Y/N]?
 if /I "%c%" EQU "Y" goto :installDisplayLink
 if /I "%c%" EQU "N" goto :afterInstallDisplayLink
-goto installSentioCheck
+goto installDisplayLinkCheck
 
 :installDisplayLink
 adb shell input keyevent KEYCODE_WAKEUP
@@ -132,7 +132,25 @@ pause
 :afterInstallDisplayLink
 
 echo.
-echo 4: Enable freeform windows (if sentio app is installed)
+echo 4: Install displaylink demo app
+echo    This app will manage the video output from your phone to the superbook.
+echo    It may be required to get the superbook up and running
+
+:installDisplayLinkDemoCheck
+set /P c=Install displaylink demo app? [Y/N]?
+if /I "%c%" EQU "Y" goto :installDisplayLinkDemo
+if /I "%c%" EQU "N" goto :afterInstallDisplayLinkDemo
+goto installDisplayLinkDemoCheck
+
+:installDisplayLinkDemo
+adb shell input keyevent KEYCODE_WAKEUP
+adb shell am start -a android.intent.action.VIEW -d 'market://details?id=com.displaylink.desktop.demo'
+echo Please check your phone screen!
+pause 
+:afterInstallDisplayLinkDemo
+
+echo.
+echo 5: Enable freeform windows (if sentio app is installed)
 echo    In order to resize windows you need to activate freeform windows.
 echo    (see https://medium.com/sentio-superbook/how-to-enable-multi-window-in-android-o-678cced03db2)
 
@@ -149,7 +167,7 @@ pause
 :afterSetFreeformWindow
 
 echo.
-echo 5: DPI Change (if sentio app is installed)
+echo 6: DPI Change (if sentio app is installed)
 echo    The Superbook and your phone most likely don't have the same resolution.
 echo    For the resolution to be changed automatically, a security flag has to be set. 
 echo    (see https://medium.com/sentio-superbook/enabling-sentio-desktop-dpi-resolution-change-d1a0b40e2c84)
@@ -168,7 +186,7 @@ pause
 
 
 echo.
-echo 6: OnePlus always-on OTG
+echo 7: OnePlus always-on OTG
 echo    If you are using a OnePlus device on OxygenOS, then it is recommended
 echo    that you permanently enable OTG.
 
@@ -184,7 +202,7 @@ pause
 :afterOnePlusPermanentOTG
 
 echo.
-echo 7: Reboot
+echo 8: Reboot
 echo    Done! You're all set to use the Superbook!
 echo    If you activated one of the settings above, you should restart your phone. 
 
@@ -200,7 +218,7 @@ pause
 :afterRestart
 
 echo.
-echo 8: Done
+echo 9: Done
 echo    You're all set. Have fun!
 adb kill-server
 timeout 1
