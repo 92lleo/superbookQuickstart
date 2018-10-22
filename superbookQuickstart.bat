@@ -168,7 +168,23 @@ pause
 
 
 echo.
-echo 6: Reboot
+echo 6: OnePlus always-on OTG
+echo    If you are using a OnePlus device on OxygenOS, then it is recommended
+echo    that you permanently enable OTG.
+
+:restartCheck
+set /P c=Would you like to permanently enable OTG? [Y/N]?
+if /I "%c%" EQU "Y" goto :onePlusPermanentOTG
+if /I "%c%" EQU "N" goto :afterOnePlusPermanentOTG
+goto restartCheck
+
+:onePlusPermanentOTG
+start adb shell settings put global oneplus_otg_auto_disable 0
+pause 
+:afterOnePlusPermanentOTG
+
+echo.
+echo 7: Reboot
 echo    Done! You're all set to use the Superbook!
 echo    If you activated one of the settings above, you should restart your phone. 
 
@@ -184,7 +200,7 @@ pause
 :afterRestart
 
 echo.
-echo 7: Done
+echo 8: Done
 echo    You're all set. Have fun!
 adb kill-server
 timeout 1
