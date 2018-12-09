@@ -8,6 +8,7 @@ There are some tasks to do with your phone in order to use the superbook. These 
 - Install the displaylink app
 - Enable freeform windows (multiwindow)
 - Enable dpi changing (for diffrent resolutions of phone/superbook)
+- Enable onplus permanent otg
 
 With this script you can do all those tasks at once.
 
@@ -16,11 +17,9 @@ Preparation & use:
 - Enable usb debugging there
 - Connect your phone to your computer
 - Drivers: Some phones (e.g. Samsung) are supported by windows and should be installed automatically. 
-  For others: This zip contains googles drivers, you can install them via the windows device manager
-              or just visit this site and go from there: https://developer.android.com/studio/run/oem-usb 
-- When starting the script (superbookQuickstart.bat) your phone should show, otherwise check your device manager
-  or google your phone model + "windows drivers"
-- once your device is recognized, run "superbookQuickstart" and just follow the steps (make sure your device stays connected)
+  For others: The script will install the Clockwork universial usb driver. If you still have problems,
+  please visit: https://developer.android.com/studio/run/oem-usb 
+- just run the script and answer the [yes/no] promts
 
 Good to read:
 sentio.com/start
@@ -28,5 +27,5 @@ medium.com/sentio-superbook/how-to-enable-multi-window-in-android-o-678cced03db2
 medium.com/sentio-superbook/enabling-sentio-desktop-dpi-resolution-change-d1a0b40e2c84
 superbookbackers.slack.com
 
-by Leonhard Künzler, 2018 (still waiting for his superbook)
-leonhard@kuenzler.io
+by Leonhard KÃ¼nzler, 2018 leonhard@kuenzler.io
+and Danny Sortino, 2018, danny.sortino@hotmail.co.uk 
